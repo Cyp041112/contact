@@ -1,0 +1,15 @@
+# 修改联系人信息
+    def update_contact(contact_id, **kwargs):
+        conn = sqlite3.connect('address_book.db')
+        cursor = conn.cursor()
+        # 拼接修改字段（支持灵活修改任意字段）
+        fields = [f"{k}=?" for k in kwargs.keys()]
+        sql = f"UPDATE contacts SET {','.join(fields)} WHERE id=?"
+        values = list(kwargs.values()) + [contact_id]
+        cursor.execute(sql, values)
+        conn.commit()
+        if cursor.rowcount > 0:
+            print("✅ 修改成功！")
+        else:
+            print("❌ 未找到对应ID的联系人")
+        conn.close()
