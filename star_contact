@@ -1,0 +1,9 @@
+def star_contact(contact_id, is_star=1):
+    conn = sqlite3.connect('address_book.db')
+    cursor = conn.cursor()
+    cursor.execute("UPDATE contacts SET is_star=? WHERE id=?", (is_star, contact_id))
+    conn.commit()
+    success = cursor.rowcount > 0
+    action = "收藏" if is_star == 1 else "取消收藏"
+    conn.close()
+    return success, f"✅ 联系人{action}成功！" if success else f"❌ 未找到ID为{contact_id}的联系人"
