@@ -1,0 +1,45 @@
+def export_to_excel(file_path="contact_data.xlsx"):
+    df = get_all_contacts()
+    df.to_excel(file_path, index=False)
+    return True, f"✅ 数据已导出到：{file_path}"
+
+def import_from_excel(file):
+    try:
+        df = pd.read_excel(file)
+        # 检查Excel是否包含id列（必填）
+        if 'id' not in df.columns:
+            return False, "❌ Excel文件缺少必填列：id（联系人ID）"
+        
+        success_count = 0
+        fail_count = 0
+        fail_reason = []
+        for _, row in df.iterrows():
+            # 校验ID和姓名必填
+            if pd.isna(row.get('id')) or pd.isna(row.get('name')):
+                fail_count += 1
+                fail_reason.append(f"行{_+2}：ID或姓名为空")
+                continue
+            
+            contact_id = int(row.get('id'))  # ID强制为整数
+            res, msg = add_contact(
+                contact_id=contact_id,
+                name=row.get('name', ''),
+                phone=str(row.get('phone', '')),
+                email=row.get('email', ''),
+                address=row.get('address', ''),
+                category=row.get('category', '')
+            )
+            if res:
+                success_count += 1
+            else:
+                fail_count += 1
+                fail_reason.append(f"行{_+2}：{msg}")
+        
+        # 拼接失败原因
+        fail_msg = ""
+        if fail_reason:
+            fail_msg = f"\n失败原因：{'; '.join(fail_reason[:5])}"  # 只显示前5条失败原因
+        
+        return True, f"✅ 导入完成！成功：{success_count}条，失败：{fail_count}条{fail_msg}"
+    except Exception as e:
+        return False, f"❌ 导入失败：{e}"
